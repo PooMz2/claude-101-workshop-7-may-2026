@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem *)",
+      "Bash(claude --version)",
+      "Bash(npx @anthropic-ai/claude-code --version)"
+    ]
+  }
+}

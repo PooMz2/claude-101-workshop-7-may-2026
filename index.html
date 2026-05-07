@@ -3,795 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude 101 Workshop — May 7, 2026</title>
+    <title>PP — Developer & Generalist</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
         :root {
-            --bg-deep: #0a0a0c;
-            --bg-surface: #111114;
-            --bg-elevated: #1a1a1f;
-            --amber: #e8a84c;
-            --amber-glow: #e8a84c40;
-            --amber-bright: #f4c26d;
-            --text-primary: #e8e4dd;
-            --text-muted: #8a857d;
-            --text-dim: #4a4740;
-            --accent-coral: #e06c5a;
-            --accent-sage: #7db88a;
-            --accent-blue: #5a8fe0;
-            --border: #2a2a30;
+            --amber: #f5a623;
+            --amber-light: #ffd080;
+            --amber-dark: #c47d00;
+            --bg: #f0ece4;
+            --bg-card: #ffffff;
+            --bg-dark: #111010;
+            --text: #111010;
+            --text-muted: #7a7570;
+            --border: rgba(0,0,0,0.08);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         body {
-            background: var(--bg-deep);
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            overflow-x: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 1.5rem;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Noise texture overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.03;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 9999;
+        /* ── BENTO GRID ── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: auto;
+            gap: 1rem;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
-        /* Scanline effect */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.03) 2px,
-                rgba(0,0,0,0.03) 4px
-            );
-            pointer-events: none;
-            z-index: 9998;
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            overflow: hidden;
+            position: relative;
         }
 
-        .grid-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 60px 60px;
-            opacity: 0.15;
-            pointer-events: none;
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
         }
 
-        .glow-orb {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.12;
-            pointer-events: none;
-            animation: orbFloat 20s ease-in-out infinite;
-        }
-
-        .glow-orb--amber {
-            background: var(--amber);
-            top: -200px;
-            right: -100px;
-            animation-delay: 0s;
-        }
-
-        .glow-orb--coral {
-            background: var(--accent-coral);
-            bottom: -200px;
-            left: -200px;
-            animation-delay: -7s;
-            opacity: 0.08;
-        }
-
-        @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(30px, -40px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.95); }
-        }
-
-        /* NAV */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 1.5rem 3rem;
+        /* ── HERO CARD ── */
+        .card--hero {
+            grid-column: span 7;
+            background: var(--bg-dark);
+            color: #fff;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(20px);
-            background: rgba(10, 10, 12, 0.7);
-            border-bottom: 1px solid var(--border);
-            animation: fadeDown 0.8s ease-out;
+            min-height: 320px;
+            padding: 2.5rem;
         }
 
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .card--hero::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
+            opacity: 0.25;
+            pointer-events: none;
         }
 
-        .nav-logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 0.85rem;
+        .hero-label {
+            font-size: 0.7rem;
+            font-weight: 600;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: var(--amber);
-        }
-
-        .nav-links {
             display: flex;
-            gap: 2.5rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            transition: color 0.3s;
-            position: relative;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--amber);
-            transition: width 0.3s;
-        }
-
-        .nav-links a:hover { color: var(--amber); }
-        .nav-links a:hover::after { width: 100%; }
-
-        /* HERO */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 8rem 3rem 4rem;
-            position: relative;
-        }
-
-        .hero-badge {
-            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 100px;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--amber);
-            margin-bottom: 2.5rem;
-            width: fit-content;
-            animation: fadeUp 0.8s ease-out 0.2s both;
         }
 
-        .hero-badge .dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent-sage);
+        .hero-label::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--amber);
             border-radius: 50%;
             animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245,166,35,0.4); }
+            50%       { opacity: 0.6; box-shadow: 0 0 0 6px rgba(245,166,35,0); }
         }
 
-        .hero-title {
-            font-family: 'Instrument Serif', serif;
-            font-size: clamp(3.5rem, 10vw, 9rem);
-            line-height: 0.95;
-            font-weight: 400;
-            margin-bottom: 2rem;
-            animation: fadeUp 0.8s ease-out 0.4s both;
-        }
-
-        .hero-title em {
-            font-style: italic;
-            color: var(--amber);
-            position: relative;
-        }
-
-        .hero-title em::after {
-            content: '';
-            position: absolute;
-            bottom: 0.05em;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--amber-glow);
-        }
-
-        .hero-title .line-2 {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.45em;
+        .hero-name {
             font-family: 'Syne', sans-serif;
+            font-size: clamp(4.5rem, 12vw, 8rem);
+            font-weight: 800;
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+            color: #fff;
+        }
+
+        .hero-name span {
+            color: var(--amber);
+        }
+
+        .hero-role {
+            font-size: 0.85rem;
             font-weight: 400;
-            letter-spacing: 0.05em;
-            margin-top: 0.5rem;
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .hero-meta {
-            display: flex;
-            gap: 3rem;
-            align-items: center;
-            animation: fadeUp 0.8s ease-out 0.6s both;
-        }
-
-        .hero-date {
-            font-size: 0.8rem;
-            color: var(--text-muted);
+            color: rgba(255,255,255,0.4);
             letter-spacing: 0.05em;
         }
 
-        .hero-date strong {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        .hero-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
+        /* ── TAGLINE CARD ── */
+        .card--tagline {
+            grid-column: span 5;
             background: var(--amber);
-            color: var(--bg-deep);
-            padding: 0.85rem 2rem;
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            border-radius: 4px;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-cta::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .hero-cta:hover::before { left: 100%; }
-        .hero-cta:hover { box-shadow: 0 0 30px var(--amber-glow); }
-
-        .hero-cta .arrow { transition: transform 0.3s; }
-        .hero-cta:hover .arrow { transform: translateX(4px); }
-
-        .hero-scroll {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-dim);
+            justify-content: flex-end;
+            min-height: 320px;
+        }
+
+        .tagline-text {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--bg-dark);
+        }
+
+        .tagline-attr {
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(0,0,0,0.4);
+            letter-spacing: 0.05em;
+        }
+
+        /* ── FACEBOOK CARD ── */
+        .card--facebook {
+            grid-column: span 4;
+            background: #1877f2;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            text-decoration: none;
+            min-height: 200px;
+        }
+
+        .card--facebook:hover {
+            background: #1565d8;
+        }
+
+        .card--facebook .card-label {
             font-size: 0.65rem;
+            font-weight: 600;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            animation: fadeUp 0.8s ease-out 1s both;
+            opacity: 0.6;
         }
 
-        .scroll-line {
-            width: 1px;
-            height: 40px;
-            background: linear-gradient(to bottom, var(--text-dim), transparent);
-            animation: scrollPulse 2s ease-in-out infinite;
+        .card--facebook .card-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
 
-        @keyframes scrollPulse {
-            0%, 100% { transform: scaleY(1); opacity: 1; }
-            50% { transform: scaleY(0.5); opacity: 0.3; }
-        }
-
-        /* SECTIONS */
-        section {
-            padding: 6rem 3rem;
-            position: relative;
-        }
-
-        .section-label {
+        .card--facebook .card-title {
             font-family: 'Syne', sans-serif;
-            font-size: 0.65rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--amber);
-            margin-bottom: 1rem;
+        }
+
+        .card--facebook .card-icon {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s;
         }
 
-        .section-label::before {
-            content: '';
-            width: 30px;
-            height: 1px;
-            background: var(--amber);
+        .card--facebook:hover .card-icon {
+            background: rgba(255,255,255,0.3);
         }
 
-        .section-title {
-            font-family: 'Instrument Serif', serif;
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 400;
-            line-height: 1.1;
-            margin-bottom: 3rem;
-            max-width: 700px;
-        }
-
-        /* LEARN SECTION */
-        .learn-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            margin-top: 2rem;
-        }
-
-        .learn-card {
-            background: var(--bg-surface);
-            padding: 2.5rem;
-            position: relative;
-            transition: all 0.4s;
-            overflow: hidden;
-        }
-
-        .learn-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--amber);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s;
-        }
-
-        .learn-card:hover::before { transform: scaleX(1); }
-        .learn-card:hover { background: var(--bg-elevated); }
-
-        .learn-card-num {
-            font-family: 'Instrument Serif', serif;
-            font-size: 3rem;
-            color: var(--text-dim);
-            line-height: 1;
-            margin-bottom: 1.5rem;
-            transition: color 0.4s;
-        }
-
-        .learn-card:hover .learn-card-num { color: var(--amber); }
-
-        .learn-card h3 {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-        }
-
-        .learn-card p {
-            font-size: 0.8rem;
-            line-height: 1.7;
-            color: var(--text-muted);
-        }
-
-        /* SKILLS SECTION */
-        .skills-section {
-            background: var(--bg-surface);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .skills-list {
+        /* ── GITHUB CARD ── */
+        .card--github {
+            grid-column: span 4;
+            background: var(--bg-dark);
+            color: #fff;
             display: flex;
             flex-direction: column;
-            gap: 0;
+            justify-content: space-between;
+            cursor: pointer;
+            text-decoration: none;
+            min-height: 200px;
         }
 
-        .skill-item {
-            display: grid;
-            grid-template-columns: 200px 1fr auto;
-            align-items: center;
-            padding: 2rem 0;
-            border-bottom: 1px solid var(--border);
-            transition: all 0.3s;
-            cursor: default;
-        }
-
-        .skill-item:last-child { border-bottom: none; }
-
-        .skill-item:hover {
-            padding-left: 1.5rem;
-            background: linear-gradient(90deg, var(--amber-glow), transparent 40%);
-        }
-
-        .skill-cmd {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--amber);
-        }
-
-        .skill-cmd::before {
-            content: '/';
-            color: var(--text-dim);
-        }
-
-        .skill-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        .skill-tag {
-            font-size: 0.6rem;
-            letter-spacing: 0.1em;
+        .card--github .card-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            padding: 0.35rem 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 100px;
-            color: var(--text-dim);
-            transition: all 0.3s;
+            opacity: 0.4;
         }
 
-        .skill-item:hover .skill-tag {
-            border-color: var(--amber);
-            color: var(--amber);
+        .card--github .card-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
 
-        /* TERMINAL SECTION */
-        .terminal-wrapper {
-            max-width: 750px;
-            margin-top: 2rem;
+        .card--github .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
         }
 
-        .terminal {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-        }
-
-        .terminal-bar {
+        .card--github .card-icon {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .card--github:hover .card-icon {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* ── STACK CARD ── */
+        .card--stack {
+            grid-column: span 4;
+            background: var(--bg-card);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card--stack .card-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .stack-pills {
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
-            padding: 0.85rem 1.25rem;
-            background: var(--bg-elevated);
-            border-bottom: 1px solid var(--border);
         }
 
-        .terminal-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
-        .terminal-dot--red { background: #e06c5a; }
-        .terminal-dot--yellow { background: var(--amber); }
-        .terminal-dot--green { background: var(--accent-sage); }
-
-        .terminal-title {
-            margin-left: 0.75rem;
-            font-size: 0.7rem;
-            color: var(--text-dim);
-        }
-
-        .terminal-body {
-            padding: 1.5rem;
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 0.65rem 0.9rem;
             font-size: 0.8rem;
-            line-height: 2;
+            font-weight: 500;
+            color: var(--text);
+            transition: background 0.2s;
         }
 
-        .terminal-line {
-            opacity: 0;
-            animation: typeLine 0.4s ease-out forwards;
+        .pill:hover { background: #e5e0d8; }
+
+        .pill-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
         }
 
-        .terminal-line:nth-child(1) { animation-delay: 0.2s; }
-        .terminal-line:nth-child(2) { animation-delay: 0.6s; }
-        .terminal-line:nth-child(3) { animation-delay: 1s; }
-        .terminal-line:nth-child(4) { animation-delay: 1.4s; }
-        .terminal-line:nth-child(5) { animation-delay: 1.8s; }
-        .terminal-line:nth-child(6) { animation-delay: 2.2s; }
+        .pill-dot--react   { background: #61dafb; }
+        .pill-dot--net     { background: #512bd4; }
+        .pill-dot--n8n     { background: #ea4b71; }
 
-        @keyframes typeLine {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .terminal-prompt {
-            color: var(--accent-sage);
-        }
-
-        .terminal-comment {
-            color: var(--text-dim);
-        }
-
-        .terminal-cmd {
-            color: var(--text-primary);
-        }
-
-        .terminal-cursor {
-            display: inline-block;
-            width: 8px;
-            height: 1.1em;
-            background: var(--amber);
-            margin-left: 2px;
-            vertical-align: text-bottom;
-            animation: blink 1s step-end infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* FOOTER */
-        footer {
-            padding: 3rem;
-            border-top: 1px solid var(--border);
+        /* ── AVAILABLE CARD ── */
+        .card--available {
+            grid-column: span 12;
+            background: var(--bg-card);
+            padding: 1.5rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-height: auto;
         }
 
-        .footer-left {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            letter-spacing: 0.05em;
+        .card--available:hover {
+            transform: none;
+            box-shadow: none;
         }
 
-        .footer-right {
-            font-family: 'Instrument Serif', serif;
-            font-size: 1.2rem;
-            font-style: italic;
-            color: var(--text-dim);
+        .available-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
         }
 
-        /* RESPONSIVE */
+        .available-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #22c55e;
+        }
+
+        .available-status::before {
+            content: '';
+            width: 8px; height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse-green 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+        }
+
+        svg { display: block; }
+
+        /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
-            nav { padding: 1rem 1.5rem; }
-            .nav-links { display: none; }
-            .hero { padding: 6rem 1.5rem 4rem; }
-            section { padding: 4rem 1.5rem; }
-            .hero-meta { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
-            .skill-item { grid-template-columns: 1fr; gap: 0.5rem; }
-            .skill-tag { width: fit-content; }
-            footer { flex-direction: column; gap: 1rem; text-align: center; }
+            body { padding: 1rem; }
+            .card--hero, .card--tagline,
+            .card--facebook, .card--github, .card--stack { grid-column: span 12; }
+            .card--hero { min-height: 260px; }
+            .card--tagline { min-height: 200px; }
         }
 
-        /* Intersection observer animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
+        @media (min-width: 769px) and (max-width: 960px) {
+            .card--hero { grid-column: span 12; }
+            .card--tagline { grid-column: span 12; min-height: 180px; }
+            .card--facebook, .card--github, .card--stack { grid-column: span 4; }
         }
     </style>
 </head>
 <body>
-    <div class="grid-bg"></div>
-    <div class="glow-orb glow-orb--amber"></div>
-    <div class="glow-orb glow-orb--coral"></div>
+    <div class="grid">
 
-    <nav>
-        <div class="nav-logo">Claude //101</div>
-        <ul class="nav-links">
-            <li><a href="#learn">Learn</a></li>
-            <li><a href="#skills">Skills</a></li>
-            <li><a href="#start">Get Started</a></li>
-        </ul>
-    </nav>
-
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-badge">
-            <span class="dot"></span>
-            Workshop — Open for Registration
-        </div>
-        <h1 class="hero-title">
-            <em>Claude</em> 101
-            <span class="line-2">Build with AI-Assisted Development</span>
-        </h1>
-        <div class="hero-meta">
-            <div class="hero-date">
-                <strong>May 7, 2026</strong> &mdash; Hands-on Workshop
-            </div>
-            <a href="#start" class="hero-cta">
-                Get Started
-                <span class="arrow">&rarr;</span>
-            </a>
-        </div>
-        <div class="hero-scroll">
-            Scroll
-            <div class="scroll-line"></div>
-        </div>
-    </section>
-
-    <!-- LEARN -->
-    <section id="learn">
-        <div class="section-label reveal">What You'll Learn</div>
-        <h2 class="section-title reveal">Master the fundamentals of building with <em>Claude Code</em></h2>
-        <div class="learn-grid reveal">
-            <div class="learn-card">
-                <div class="learn-card-num">01</div>
-                <h3>Claude Code Fundamentals</h3>
-                <p>Install, configure, and navigate Claude Code. Learn the CLI, interactive mode, headless execution, and how to structure your projects for AI-assisted workflows.</p>
-            </div>
-            <div class="learn-card">
-                <div class="learn-card-num">02</div>
-                <h3>Skills & Slash Commands</h3>
-                <p>Extend Claude Code with specialized skills. From test-driven development to PRD generation, discover and install the tools that accelerate your workflow.</p>
-            </div>
-            <div class="learn-card">
-                <div class="learn-card-num">03</div>
-                <h3>AI-Assisted Development</h3>
-                <p>Write, debug, and refactor code with Claude as your pair programmer. Learn prompting strategies, context management, and when to let the AI lead.</p>
-            </div>
-            <div class="learn-card">
-                <div class="learn-card-num">04</div>
-                <h3>Real-World Projects</h3>
-                <p>Build and ship a complete project during the workshop. From scaffolding to deployment, experience the full cycle of AI-assisted development firsthand.</p>
+        <!-- HERO -->
+        <div class="card card--hero">
+            <div class="hero-label">Developer &amp; Generalist</div>
+            <div>
+                <h1 class="hero-name">P<span>P</span></h1>
+                <p class="hero-role">Building with intention.</p>
             </div>
         </div>
-    </section>
 
-    <!-- SKILLS -->
-    <section id="skills" class="skills-section">
-        <div class="section-label reveal">Installed Skills</div>
-        <h2 class="section-title reveal">Your toolkit, ready to go</h2>
-        <div class="skills-list reveal">
-            <div class="skill-item">
-                <span class="skill-cmd">grill-me</span>
-                <span class="skill-desc">Stress-test your plan or design through relentless interviewing until reaching shared understanding</span>
-                <span class="skill-tag">Design Review</span>
-            </div>
-            <div class="skill-item">
-                <span class="skill-cmd">qa</span>
-                <span class="skill-desc">Interactive QA session — report bugs conversationally, auto-files GitHub issues with full context</span>
-                <span class="skill-tag">Quality</span>
-            </div>
-            <div class="skill-item">
-                <span class="skill-cmd">tdd</span>
-                <span class="skill-desc">Test-driven development with red-green-refactor loop for building robust features</span>
-                <span class="skill-tag">Testing</span>
-            </div>
-            <div class="skill-item">
-                <span class="skill-cmd">to-prd</span>
-                <span class="skill-desc">Turn your current conversation context into a PRD and submit it as a GitHub issue</span>
-                <span class="skill-tag">Planning</span>
+        <!-- TAGLINE -->
+        <div class="card card--tagline">
+            <div></div>
+            <div>
+                <p class="tagline-text">Begin with<br>the end<br>in mind.</p>
+                <p class="tagline-attr">— PP's principle</p>
             </div>
         </div>
-    </section>
 
-    <!-- GET STARTED -->
-    <section id="start">
-        <div class="section-label reveal">Get Started</div>
-        <h2 class="section-title reveal">Up and running in<br>under a minute</h2>
-        <div class="terminal-wrapper reveal">
-            <div class="terminal">
-                <div class="terminal-bar">
-                    <div class="terminal-dot terminal-dot--red"></div>
-                    <div class="terminal-dot terminal-dot--yellow"></div>
-                    <div class="terminal-dot terminal-dot--green"></div>
-                    <span class="terminal-title">terminal</span>
+        <!-- FACEBOOK -->
+        <a href="https://www.facebook.com/phakh.phumi.wa.li.prakhon"
+           target="_blank" rel="noopener noreferrer"
+           class="card card--facebook">
+            <span class="card-label">Contact</span>
+            <div class="card-action">
+                <span class="card-title">Facebook</span>
+                <span class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </span>
+            </div>
+        </a>
+
+        <!-- GITHUB -->
+        <a href="https://github.com/PooMz2"
+           target="_blank" rel="noopener noreferrer"
+           class="card card--github">
+            <span class="card-label">Code</span>
+            <div class="card-action">
+                <span class="card-title">GitHub</span>
+                <span class="card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                    </svg>
+                </span>
+            </div>
+        </a>
+
+        <!-- STACK -->
+        <div class="card card--stack">
+            <span class="card-label">Stack</span>
+            <div class="stack-pills">
+                <div class="pill">
+                    <span class="pill-dot pill-dot--react"></span>
+                    React
                 </div>
-                <div class="terminal-body">
-                    <div class="terminal-line">
-                        <span class="terminal-comment"># Install Claude Code</span>
-                    </div>
-                    <div class="terminal-line">
-                        <span class="terminal-prompt">$ </span>
-                        <span class="terminal-cmd">npm install -g @anthropic-ai/claude-code</span>
-                    </div>
-                    <div class="terminal-line">&nbsp;</div>
-                    <div class="terminal-line">
-                        <span class="terminal-comment"># Or run without installing</span>
-                    </div>
-                    <div class="terminal-line">
-                        <span class="terminal-prompt">$ </span>
-                        <span class="terminal-cmd">npx @anthropic-ai/claude-code</span>
-                    </div>
-                    <div class="terminal-line">
-                        <span class="terminal-prompt">$ </span>
-                        <span class="terminal-cmd">claude</span>
-                        <span class="terminal-cursor"></span>
-                    </div>
+                <div class="pill">
+                    <span class="pill-dot pill-dot--net"></span>
+                    ASP.NET Core API
+                </div>
+                <div class="pill">
+                    <span class="pill-dot pill-dot--n8n"></span>
+                    n8n
                 </div>
             </div>
         </div>
-    </section>
 
-    <footer>
-        <div class="footer-left">&copy; 2026 Claude 101 Workshop</div>
-        <div class="footer-right">Build something extraordinary.</div>
-    </footer>
+        <!-- STATUS BAR -->
+        <div class="card card--available">
+            <span class="available-text">PP &mdash; Developer &amp; Generalist &mdash; 2026</span>
+            <span class="available-status">Available for work</span>
+        </div>
 
-    <script>
-        // Intersection Observer for scroll reveal
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-        // Smooth parallax on glow orbs
-        document.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 30;
-            const y = (e.clientY / window.innerHeight - 0.5) * 30;
-            document.querySelector('.glow-orb--amber').style.transform = `translate(${x}px, ${y}px)`;
-            document.querySelector('.glow-orb--coral').style.transform = `translate(${-x}px, ${-y}px)`;
-        });
-    </script>
+    </div>
 </body>
 </html>
